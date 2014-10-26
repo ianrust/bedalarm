@@ -16,7 +16,7 @@ fgbg = cv2.createBackgroundSubtractorMOG2()
 
 def mouseCallback(event, x, y, flags, param):
 	if event == cv2.EVENT_LBUTTONDBLCLK:
-		print opening[y,x]
+		print "("+str(x)+","+str(y)+")"
 
 cv2.setMouseCallback('bg',mouseCallback)
 
@@ -24,12 +24,22 @@ while(True):
 	# Capture frame-by-frame
 	ret, frame = cap.read()
 
-	fgmask = fgbg.apply(frame)
+	# mask (of course replace corners with yours)
+	mask = np.zeros(frame.shape, dtype=np.uint8)
+	roi_corners = np.array([[(274,55), (4,193), (481,477), (540,477), (639,294), (634,168)]], dtype=np.int32)
+	white = (255, 255, 255)
+	cv2.fillPoly(mask, roi_corners, white)
+
+	# apply the mask
+	masked_frame = cv2.bitwise_and(frame, mask)
+
+	fgmask = fgbg.apply(masked_frame)
 	opening = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
 	opening = cv2.dilate(opening,kernel,iterations = 1)
 	_, thresh = cv2.threshold(opening, 50, 255, cv2.THRESH_BINARY)
 
 	_, contours, hierarchy = cv2.findContours(opening,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
 
 	max_area = 0
 	for contour in contours:
@@ -49,7 +59,7 @@ while(True):
 		cv2.imwrite("../laikabad/"+filename,frame)
 		pygame.mixer.music.play()
 
-	cv2.imshow('bg',opening)
+	cv2.imshow('bg',masked_frame)
 	# Display the resulting frame
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
