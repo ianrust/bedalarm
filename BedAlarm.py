@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import pygame
+import datetime
 
 pygame.init()
 
@@ -39,16 +40,16 @@ while(True):
 			area = cv2.contourArea(contour)
 			if area>max_area:
 				max_area = area
-			cv2.circle(frame,(centroid_x,centroid_y), int(area), (0,0,255))
 		except:
 			pass
 
 	if max_area>2000:
-		print "detection"		
+		filename = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")	+ ".jpg"
+		print "saving detection: " + filename
+		cv2.imwrite("../laikabad/"+filename,frame)
 		pygame.mixer.music.play()
 
 	cv2.imshow('bg',opening)
-	print max_area
 	# Display the resulting frame
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
